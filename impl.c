@@ -32,20 +32,19 @@ void sse_transpose(int *src, int *dst, int w, int h)
     }
 }
 
-void sse_prefetch_transpose(int *src, int *dst, int w, int h)
+void sse_prefetch_transpose(int *src, int *dst, int w, int h, int PFDIST)
 {
     for (int x = 0; x < w; x += 4) {
         for (int y = 0; y < h; y += 4) {
-#define PFDIST  8
-            _mm_prefetch(src+(y + PFDIST + 0) *w + x, _MM_HINT_T1);
-            _mm_prefetch(src+(y + PFDIST + 1) *w + x, _MM_HINT_T1);
-            _mm_prefetch(src+(y + PFDIST + 2) *w + x, _MM_HINT_T1);
-            _mm_prefetch(src+(y + PFDIST + 3) *w + x, _MM_HINT_T1);
+            _mm_prefetch(src + (y + PFDIST + 0) *w + x, _MM_HINT_T1);
+            _mm_prefetch(src + (y + PFDIST + 1) *w + x, _MM_HINT_T1);
+            _mm_prefetch(src + (y + PFDIST + 2) *w + x, _MM_HINT_T1);
+            _mm_prefetch(src + (y + PFDIST + 3) *w + x, _MM_HINT_T1);
 
-            __m128i I0 = _mm_loadu_si128 ((__m128i *)(src + (y + 0) * w + x));
-            __m128i I1 = _mm_loadu_si128 ((__m128i *)(src + (y + 1) * w + x));
-            __m128i I2 = _mm_loadu_si128 ((__m128i *)(src + (y + 2) * w + x));
-            __m128i I3 = _mm_loadu_si128 ((__m128i *)(src + (y + 3) * w + x));
+            __m128i I0 = _mm_loadu_si128((__m128i *)(src + (y + 0) * w + x));
+            __m128i I1 = _mm_loadu_si128((__m128i *)(src + (y + 1) * w + x));
+            __m128i I2 = _mm_loadu_si128((__m128i *)(src + (y + 2) * w + x));
+            __m128i I3 = _mm_loadu_si128((__m128i *)(src + (y + 3) * w + x));
             __m128i T0 = _mm_unpacklo_epi32(I0, I1);
             __m128i T1 = _mm_unpacklo_epi32(I2, I3);
             __m128i T2 = _mm_unpackhi_epi32(I0, I1);

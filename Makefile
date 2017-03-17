@@ -7,6 +7,24 @@ EXEC = \
 	sse_transpose\
 	naive_transpose
 
+METHOD_NUM = 3
+
+REPEAT = 10
+
+TEST = cache-test
+ifeq ($(strip $(DIS)),1)
+TEST = cache-test-distance
+DIS_CASE = \
+	0\
+	2\
+	4\
+	8\
+	12\
+	16
+METHOD_NUM = 6
+endif
+
+
 all: $(GIT_HOOKS) $(EXEC)
 
 $(GIT_HOOKS):
@@ -21,12 +39,34 @@ run: $(EXEC)
 	./sse_transpose
 	./naive_transpose
 
+cache-test-distance: sse_prefetch_transpose
+	>time.txt
+	for dis in $(DIS_CASE);do \
+		printf "sse_prefetch_"$$dis"_transpose ";\
+		perf stat --repeat $(REPEAT) \
+		-e cache-misses,cache-references,L1-dcache-load-misses,L1-dcache-loads,L1-dcache-stores,L1-icache-load-misses,r014c,r024c\
+		./sse_prefetch_transpose $$dis; \
+		printf "\n"; \
+	done >> time.txt
+
 cache-test: $(EXEC)
+	>time.txt
 	for method in $(EXEC);do \
-		perf stat --repeat 100 \
-		-e cache-misses,cache-references,L1-dcache-load-misses,L1-dcache-loads,L1-dcache-stores,L1-icache-load-misses \
-		./$$method;\
-	done
-	
+		printf "%s"$$method" ";\
+		perf stat --repeat $(REPEAT) \
+		-e cache-misses,cache-references,L1-dcache-load-misses,L1-dcache-loads,L1-dcache-stores,L1-icache-load-misses,r014c,r024c\
+		./$$method; \
+		printf "\n"; \
+	done >> time.txt
+
+output.txt: $(TEST) calculate
+	./calculate $(METHOD_NUM) $(REPEAT)
+
+plot: output.txt
+	gnuplot scripts/runtime.gp
+
+calculate: calculate.c
+	$(CC) $(CFLAGS_common) $^ -o $@
+
 clean:
-	$(RM) main $(EXEC)
+	$(RM) main $(EXEC) *.txt *.gz *.png

@@ -5,9 +5,10 @@ GIT_HOOKS := .git/hooks/applied
 EXEC = \
 	sse_prefetch_transpose\
 	sse_transpose\
-	naive_transpose
+	naive_transpose\
+	avx_transpose
 
-METHOD_NUM = 3
+METHOD_NUM = $(words $(EXEC))
 
 REPEAT = 10
 
@@ -21,7 +22,7 @@ DIS_CASE = \
 	8\
 	12\
 	16
-METHOD_NUM = 6
+METHOD_NUM = $(words $(DIS_CASE))
 endif
 
 
@@ -32,9 +33,10 @@ $(GIT_HOOKS):
 	@echo
 
 %_transpose:
-	$(CC) $(CFLAGS) -D$(shell echo $(subst _transpose,,$@) | tr a-z A-Z) -o $@ main.c
+	$(CC) $(CFLAGS) -mavx2 -D$(shell echo $(subst _transpose,,$@) | tr a-z A-Z) -o $@ main.c
 
 run: $(EXEC)
+	./avx_transpose
 	./sse_prefetch_transpose
 	./sse_transpose
 	./naive_transpose

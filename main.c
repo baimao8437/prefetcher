@@ -52,6 +52,9 @@ int main(int argc, char *argv[])
                              6, 14, 22, 30, 38, 46, 54, 62,
                              7, 15, 23, 31, 39, 47, 55, 63
                            };
+#if defined(AVX_PREFETCH)
+        avx_prefetch_transpose(testin, testout, 8, 8, (argc == 2) ? atoi(argv[1]) : 8);
+#endif
 #if defined(AVX)
         avx_transpose(testin, testout, 8, 8);
 #endif
@@ -77,6 +80,12 @@ int main(int argc, char *argv[])
         for (int y = 0; y < TEST_H; y++)
             for (int x = 0; x < TEST_W; x++)
                 *(src + y * TEST_W + x) = rand();
+#if defined(AVX_PREFETCH)
+        clock_gettime(CLOCK_REALTIME, &start);
+        avx_prefetch_transpose(src, out, TEST_W, TEST_H, (argc == 2) ? atoi(argv[1]) : 8);
+        clock_gettime(CLOCK_REALTIME, &end);
+        printf("%ld ", diff_in_us(start, end));
+#endif
 #if defined(AVX)
         clock_gettime(CLOCK_REALTIME, &start);
         avx_transpose(src, out, TEST_W, TEST_H);

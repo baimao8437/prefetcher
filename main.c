@@ -15,19 +15,7 @@
  */
 
 #include "impl.c"
-
-static long diff_in_us(struct timespec t1, struct timespec t2)
-{
-    struct timespec diff;
-    if (t2.tv_nsec - t1.tv_nsec < 0) {
-        diff.tv_sec  = t2.tv_sec - t1.tv_sec - 1;
-        diff.tv_nsec = t2.tv_nsec - t1.tv_nsec + 1000000000;
-    } else {
-        diff.tv_sec  = t2.tv_sec - t1.tv_sec;
-        diff.tv_nsec = t2.tv_nsec - t1.tv_nsec;
-    }
-    return (diff.tv_sec * 1000000.0 + diff.tv_nsec / 1000.0);
-}
+#include "Stopwatch.c"
 
 int main(int argc, char *argv[])
 {
@@ -72,7 +60,7 @@ int main(int argc, char *argv[])
     }
 
     {
-        struct timespec start, end;
+        Stopwatch_struct *timer = new_Stopwatch();
         int *src = (int *) malloc(sizeof(int) * TEST_W * TEST_H);
         int *out = (int *) malloc(sizeof(int) * TEST_W * TEST_H);
 
@@ -81,34 +69,34 @@ int main(int argc, char *argv[])
             for (int x = 0; x < TEST_W; x++)
                 *(src + y * TEST_W + x) = rand();
 #if defined(AVX_PREFETCH)
-        clock_gettime(CLOCK_REALTIME, &start);
+        Stopwatch_start(timer);
         avx_prefetch_transpose(src, out, TEST_W, TEST_H, (argc == 2) ? atoi(argv[1]) : 8);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("%ld ", diff_in_us(start, end));
+        printf("%lf ", Stopwatch_read(timer));
+        Stopwatch_delete(timer);
 #endif
 #if defined(AVX)
-        clock_gettime(CLOCK_REALTIME, &start);
+        Stopwatch_start(timer);
         avx_transpose(src, out, TEST_W, TEST_H);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("%ld ", diff_in_us(start, end));
+        printf("%lf ", Stopwatch_read(timer));
+        Stopwatch_delete(timer);
 #endif
 #if defined(SSE_PREFETCH)
-        clock_gettime(CLOCK_REALTIME, &start);
+        Stopwatch_start(timer);
         sse_prefetch_transpose(src, out, TEST_W, TEST_H, (argc == 2) ? atoi(argv[1]) : 8);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("%ld ", diff_in_us(start, end));
+        printf("%lf ", Stopwatch_read(timer));
+        Stopwatch_delete(timer);
 #endif
 #if defined(SSE)
-        clock_gettime(CLOCK_REALTIME, &start);
+        Stopwatch_start(timer);
         sse_transpose(src, out, TEST_W, TEST_H);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("%ld ", diff_in_us(start, end));
+        printf("%lf ", Stopwatch_read(timer));
+        Stopwatch_delete(timer);
 #endif
 #if defined(NAIVE)
-        clock_gettime(CLOCK_REALTIME, &start);
+        Stopwatch_start(timer);
         naive_transpose(src, out, TEST_W, TEST_H);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("%ld ", diff_in_us(start, end));
+        printf("%lf ", Stopwatch_read(timer));
+        Stopwatch_delete(timer);
 #endif
         free(src);
         free(out);

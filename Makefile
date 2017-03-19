@@ -37,11 +37,10 @@ $(GIT_HOOKS):
 	$(CC) $(CFLAGS) -mavx2 -D$(shell echo $(subst _transpose,,$@) | tr a-z A-Z) -o $@ main.c
 
 run: $(EXEC)
-	./avx_prefetch_transpose
-	./avx_transpose
-	./sse_prefetch_transpose
-	./sse_transpose
-	./naive_transpose
+	for method in $(EXEC);do \
+		./$$method; \
+		printf "\n"; \
+	done
 
 cache-test-distance: sse_prefetch_transpose
 	>time.txt

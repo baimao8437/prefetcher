@@ -3,9 +3,9 @@ CFLAGS = -msse2 --std gnu99 -O0 -Wall -Wextra
 GIT_HOOKS := .git/hooks/applied
 
 EXEC = \
-	sse_prefetch_transpose\
-	sse_transpose\
 	naive_transpose\
+	sse_transpose\
+	sse_prefetch_transpose\
 	avx_transpose\
 	avx_prefetch_transpose
 

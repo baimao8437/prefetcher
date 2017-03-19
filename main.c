@@ -71,33 +71,29 @@ int main(int argc, char *argv[])
 #if defined(AVX_PREFETCH)
         Stopwatch_start(timer);
         avx_prefetch_transpose(src, out, TEST_W, TEST_H, (argc == 2) ? atoi(argv[1]) : 8);
-        printf("%lf ", Stopwatch_read(timer));
-        Stopwatch_delete(timer);
+        printf("%ld ", Stopwatch_read(timer));
 #endif
 #if defined(AVX)
         Stopwatch_start(timer);
         avx_transpose(src, out, TEST_W, TEST_H);
-        printf("%lf ", Stopwatch_read(timer));
-        Stopwatch_delete(timer);
+        printf("%ld ", Stopwatch_read(timer));
 #endif
 #if defined(SSE_PREFETCH)
         Stopwatch_start(timer);
         sse_prefetch_transpose(src, out, TEST_W, TEST_H, (argc == 2) ? atoi(argv[1]) : 8);
-        printf("%lf ", Stopwatch_read(timer));
-        Stopwatch_delete(timer);
+        printf("%ld ", Stopwatch_read(timer));
 #endif
 #if defined(SSE)
         Stopwatch_start(timer);
         sse_transpose(src, out, TEST_W, TEST_H);
-        printf("%lf ", Stopwatch_read(timer));
-        Stopwatch_delete(timer);
+        printf("%ld ", Stopwatch_read(timer));
 #endif
 #if defined(NAIVE)
         Stopwatch_start(timer);
         naive_transpose(src, out, TEST_W, TEST_H);
-        printf("%lf ", Stopwatch_read(timer));
-        Stopwatch_delete(timer);
+        printf("%ld ", Stopwatch_read(timer));
 #endif
+        Stopwatch_delete(timer);
         free(src);
         free(out);
     }
